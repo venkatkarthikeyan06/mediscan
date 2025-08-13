@@ -37,42 +37,114 @@ export default function MedicineVerification() {
       // Simulate prescription analysis
       setLoading(true)
       setTimeout(() => {
-        const medicines = [
+        const allMedicines = [
           {
-            name: "Lisinopril 10mg",
-            brand: "Prinivil",
-            manufacturer: "Merck & Co.",
-            prescribedBy: "Dr. Sarah Johnson",
-            dosage: "10mg once daily",
+            name: "Paracetamol 500mg",
+            brand: "Crocin",
+            manufacturer: "GSK",
+            classification: "Good",
+            safety: "Safe for general use",
+            prescribedBy: "Dr. Rajesh Kumar",
+            dosage: "500mg twice daily",
+            quantity: "20 tablets",
+            refills: "3 remaining",
+            verified: true,
+            fda_approved: true,
+            interactions: ["Alcohol", "Warfarin"],
+            warnings: ["Do not exceed 4g per day", "Avoid alcohol consumption"],
+          },
+          {
+            name: "Aspirin 75mg",
+            brand: "Disprin",
+            manufacturer: "Reckitt Benckiser",
+            classification: "Good",
+            safety: "Safe when used as directed",
+            prescribedBy: "Dr. Priya Sharma",
+            dosage: "75mg once daily",
             quantity: "30 tablets",
             refills: "2 remaining",
             verified: true,
             fda_approved: true,
-            interactions: ["Potassium supplements", "NSAIDs"],
-            warnings: ["Monitor blood pressure regularly", "Avoid potassium-rich foods", "May cause dizziness"],
+            interactions: ["Blood thinners", "NSAIDs"],
+            warnings: ["Take with food", "Monitor for bleeding"],
           },
           {
-            name: "Metformin 500mg",
+            name: "Tramadol 50mg",
+            brand: "Ultram",
+            manufacturer: "Janssen",
+            classification: "Harmful",
+            safety: "Potentially addictive - use with caution",
+            prescribedBy: "Dr. Amit Patel",
+            dosage: "50mg as needed",
+            quantity: "10 tablets",
+            refills: "0 remaining",
+            verified: true,
+            fda_approved: true,
+            interactions: ["Alcohol", "Antidepressants", "Sedatives"],
+            warnings: ["Risk of addiction", "May cause drowsiness", "Do not drive"],
+          },
+          {
+            name: "Ibuprofen 400mg",
+            brand: "Brufen",
+            manufacturer: "Abbott",
+            classification: "Good",
+            safety: "Safe for short-term use",
+            prescribedBy: "Dr. Sunita Reddy",
+            dosage: "400mg three times daily",
+            quantity: "15 tablets",
+            refills: "1 remaining",
+            verified: true,
+            fda_approved: true,
+            interactions: ["Blood pressure medications", "Aspirin"],
+            warnings: ["Take with food", "May cause stomach upset"],
+          },
+          {
+            name: "Codeine 30mg",
+            brand: "Tylenol #3",
+            manufacturer: "Johnson & Johnson",
+            classification: "Harmful",
+            safety: "Controlled substance - high addiction risk",
+            prescribedBy: "Dr. Vikram Singh",
+            dosage: "30mg every 6 hours",
+            quantity: "12 tablets",
+            refills: "0 remaining",
+            verified: true,
+            fda_approved: true,
+            interactions: ["Alcohol", "Sedatives", "MAO inhibitors"],
+            warnings: ["Highly addictive", "Respiratory depression risk", "Avoid alcohol"],
+          },
+          {
+            name: "Metformin 850mg",
             brand: "Glucophage",
             manufacturer: "Bristol-Myers Squibb",
-            prescribedBy: "Dr. Sarah Johnson",
-            dosage: "500mg twice daily",
+            classification: "Good",
+            safety: "Safe and effective for diabetes",
+            prescribedBy: "Dr. Kavitha Nair",
+            dosage: "850mg twice daily",
             quantity: "60 tablets",
             refills: "5 remaining",
             verified: true,
             fda_approved: true,
-            interactions: ["Alcohol", "Contrast dyes"],
-            warnings: ["Take with meals", "Monitor kidney function", "May cause stomach upset"],
+            interactions: ["Contrast dyes", "Alcohol"],
+            warnings: ["Take with meals", "Monitor kidney function"],
           },
         ]
 
-        const randomMedicine = medicines[Math.floor(Math.random() * medicines.length)]
-        setAnalysisResult(randomMedicine)
+        // Randomly select 2-4 medicines
+        const numberOfMedicines = Math.floor(Math.random() * 3) + 2 // 2-4 medicines
+        const shuffled = allMedicines.sort(() => 0.5 - Math.random())
+        const selectedMedicines = shuffled.slice(0, numberOfMedicines)
+
+        setAnalysisResult({
+          medicines: selectedMedicines,
+          totalFound: numberOfMedicines,
+          analysisComplete: true,
+        })
         setLoading(false)
 
         toast({
           title: "Prescription Analyzed",
-          description: "Successfully extracted medication information from your prescription.",
+          description: `Found ${numberOfMedicines} medicines in your prescription.`,
         })
       }, 3000)
     }
@@ -143,78 +215,87 @@ export default function MedicineVerification() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                {analysisResult.verified ? (
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                ) : (
-                  <AlertTriangle className="h-5 w-5 text-red-600" />
-                )}
-                Prescription Analysis
+                <CheckCircle className="h-5 w-5 text-green-600" />
+                Prescription Analysis - {analysisResult.totalFound} Medicines Found
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <h3 className="font-semibold text-lg">{analysisResult.name}</h3>
-                <p className="text-gray-600">{analysisResult.brand}</p>
-                <p className="text-sm text-gray-500">by {analysisResult.manufacturer}</p>
-                <p className="text-sm text-blue-600">Prescribed by {analysisResult.prescribedBy}</p>
-              </div>
+            <CardContent className="space-y-6">
+              {analysisResult.medicines.map((medicine: any, index: number) => (
+                <div key={index} className="border rounded-lg p-4 space-y-4">
+                  <div>
+                    <h3 className="font-semibold text-lg">{medicine.name}</h3>
+                    <p className="text-gray-600">{medicine.brand}</p>
+                    <p className="text-sm text-gray-500">by {medicine.manufacturer}</p>
+                    <p className="text-sm text-blue-600">Prescribed by {medicine.prescribedBy}</p>
+                  </div>
 
-              <div className="grid grid-cols-1 gap-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="font-medium">Dosage:</span>
-                  <span>{analysisResult.dosage}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium">Quantity:</span>
-                  <span>{analysisResult.quantity}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium">Refills:</span>
-                  <span>{analysisResult.refills}</span>
-                </div>
-              </div>
+                  <div className="flex gap-2">
+                    <Badge variant={medicine.verified ? "default" : "destructive"}>
+                      {medicine.verified ? "Prescription Verified" : "Not Verified"}
+                    </Badge>
+                    <Badge variant={medicine.classification === "Good" ? "default" : "destructive"}>
+                      {medicine.classification}
+                    </Badge>
+                    {medicine.fda_approved && <Badge variant="secondary">FDA Approved</Badge>}
+                  </div>
 
-              <div className="flex gap-2">
-                <Badge variant={analysisResult.verified ? "default" : "destructive"}>
-                  {analysisResult.verified ? "Prescription Verified" : "Not Verified"}
-                </Badge>
-                {analysisResult.fda_approved && <Badge variant="secondary">FDA Approved</Badge>}
-              </div>
+                  <div className="grid grid-cols-1 gap-3 text-sm">
+                    <div className="flex justify-between">
+                      <span className="font-medium">Safety:</span>
+                      <span className={medicine.classification === "Good" ? "text-green-600" : "text-red-600"}>
+                        {medicine.safety}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-medium">Dosage:</span>
+                      <span>{medicine.dosage}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-medium">Quantity:</span>
+                      <span>{medicine.quantity}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-medium">Refills:</span>
+                      <span>{medicine.refills}</span>
+                    </div>
+                  </div>
 
-              {analysisResult.interactions.length > 0 && (
-                <div>
-                  <h4 className="font-semibold mb-2 flex items-center gap-1">
-                    <AlertTriangle className="h-4 w-4 text-orange-600" />
-                    Drug Interactions
-                  </h4>
-                  <ul className="space-y-1">
-                    {analysisResult.interactions.map((interaction: string, index: number) => (
-                      <li key={index} className="text-sm text-orange-700 bg-orange-50 p-2 rounded">
-                        Avoid: {interaction}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+                  {medicine.interactions.length > 0 && (
+                    <div>
+                      <h4 className="font-semibold mb-2 flex items-center gap-1">
+                        <AlertTriangle className="h-4 w-4 text-orange-600" />
+                        Drug Interactions
+                      </h4>
+                      <ul className="space-y-1">
+                        {medicine.interactions.map((interaction: string, idx: number) => (
+                          <li key={idx} className="text-sm text-orange-700 bg-orange-50 p-2 rounded">
+                            Avoid: {interaction}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
 
-              {analysisResult.warnings.length > 0 && (
-                <div>
-                  <h4 className="font-semibold mb-2 flex items-center gap-1">
-                    <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                    Important Warnings
-                  </h4>
-                  <ul className="space-y-1">
-                    {analysisResult.warnings.map((warning: string, index: number) => (
-                      <li key={index} className="text-sm text-yellow-700 bg-yellow-50 p-2 rounded">
-                        {warning}
-                      </li>
-                    ))}
-                  </ul>
+                  {medicine.warnings.length > 0 && (
+                    <div>
+                      <h4 className="font-semibold mb-2 flex items-center gap-1">
+                        <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                        Important Warnings
+                      </h4>
+                      <ul className="space-y-1">
+                        {medicine.warnings.map((warning: string, idx: number) => (
+                          <li key={idx} className="text-sm text-yellow-700 bg-yellow-50 p-2 rounded">
+                            {warning}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
-              )}
+              ))}
 
               <div className="pt-4 border-t">
-                <Button className="w-full bg-emerald-600 hover:bg-emerald-700">Save to Medicine Cabinet</Button>
+                <Button className="w-full bg-emerald-600 hover:bg-emerald-700">Save All to Medicine Cabinet</Button>
               </div>
             </CardContent>
           </Card>

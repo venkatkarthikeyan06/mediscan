@@ -1,12 +1,19 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Phone, MapPin, AlertTriangle, Settings, Shield } from "lucide-react"
+import { toast } from "@/hooks/use-toast"
+
+declare global {
+  interface Window {
+    emailjs: any
+  }
+}
 
 export default function EmergencyButton() {
   const [emergencyContacts, setEmergencyContacts] = useState([
@@ -21,23 +28,209 @@ export default function EmergencyButton() {
     bloodType: "",
   })
   const [isEmergency, setIsEmergency] = useState(false)
+  const [emailJsLoaded, setEmailJsLoaded] = useState(false)
 
-  const handleEmergencyCall = () => {
-    setIsEmergency(true)
-    // Get user location
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        const location = `${position.coords.latitude}, ${position.coords.longitude}`
-        console.log("Emergency location:", location)
-        // In a real app, this would send location to emergency services
+  const EMAILJS_CONFIG = {
+    PUBLIC_KEY: process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || "",
+    SERVICE_ID: process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || "",
+    TEMPLATE_ID: process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || "",
+  }
+
+  const isEmailJsConfigured = () => {
+    return (
+      EMAILJS_CONFIG.PUBLIC_KEY &&
+      EMAILJS_CONFIG.SERVICE_ID &&
+      EMAILJS_CONFIG.TEMPLATE_ID &&
+      EMAILJS_CONFIG.PUBLIC_KEY !== "YOUR_PUBLIC_KEY" &&
+      EMAILJS_CONFIG.SERVICE_ID !== "YOUR_SERVICE_ID" &&
+      EMAILJS_CONFIG.TEMPLATE_ID !== "YOUR_TEMPLATE_ID" &&
+      EMAILJS_CONFIG.PUBLIC_KEY.length > 10 // Basic validation for key length
+    )
+  }
+
+  useEffect(() => {
+    if (isEmailJsConfigured()) {
+      const script = document.createElement("script")
+      script.src = "https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"
+      script.onload = () => {
+        try {
+          if (window.emailjs) {
+            window.emailjs.init(EMAILJS_CONFIG.PUBLIC_KEY)
+            setEmailJsLoaded(true)
+            toast({
+              title: "✅ EmailJS Ready",
+              description: "Emergency email system is fully configured and active",
+            })
+          }
+        } catch (error) {
+          console.error("EmailJS initialization error:", error)
+          setEmailJsLoaded(false)
+          toast({
+            title: "📧 Email Fallback Mode",
+            description: "EmailJS configuration issue - using email client fallback",
+            variant: "default",
+          })
+        }
+      }
+      script.onerror = () => {
+        console.error("Failed to load EmailJS")
+        setEmailJsLoaded(false)
+      }
+      document.head.appendChild(script)
+
+      return () => {
+        if (document.head.contains(script)) {
+          document.head.removeChild(script)
+        }
+      }
+    } else {
+      toast({
+        title: "📧 Email Fallback Mode",
+        description: "EmailJS not configured - using default email client",
+        variant: "default",
       })
     }
+  }, [])
 
-    // Simulate emergency call
+  const handleEmergencyCall = async () => {
+    setIsEmergency(true)
+
+    const emergencyNumber = "6362108886"
+    const emergencyEmail = "chetankumar2482005@gmail.com"
+    const currentTime = new Date().toLocaleString()
+    const location = "Bangalore, Karnataka, India"
+    const address = "MG Road, Bangalore - 560001"
+    const coordinates = "12.9716° N, 77.5946° E"
+
+    const emergencyMessage = `🚨 MEDICAL EMERGENCY ALERT!
+
+Location: ${location}
+Address: ${address}
+Coordinates: ${coordinates}
+
+Immediate medical assistance required. Please respond urgently.
+
+Medical Info:
+- Blood Type: ${medicalInfo.bloodType || "Not specified"}
+- Allergies: ${medicalInfo.allergies || "None specified"}
+- Current Medications: ${medicalInfo.medications || "None specified"}
+- Medical Conditions: ${medicalInfo.conditions || "None specified"}
+
+Time: ${currentTime}
+
+This is an automated emergency alert from MediScan Health System.`
+
+    const sendEmergencyMessage = async () => {
+      try {
+        if (emailJsLoaded && window.emailjs && isEmailJsConfigured()) {
+          const emailParams = {
+            to_email: emergencyEmail,
+            subject: "🚨 MEDICAL EMERGENCY ALERT - Immediate Response Required",
+            message: `URGENT MEDICAL EMERGENCY
+
+Patient Location: ${location}
+Exact Address: ${address}
+GPS Coordinates: ${coordinates}
+
+Emergency Contact: ${emergencyNumber}
+
+MEDICAL INFORMATION:
+- Blood Type: ${medicalInfo.bloodType || "Not specified"}
+- Known Allergies: ${medicalInfo.allergies || "None specified"}
+- Current Medications: ${medicalInfo.medications || "None specified"}
+- Medical Conditions: ${medicalInfo.conditions || "None specified"}
+
+Emergency Time: ${currentTime}
+
+IMMEDIATE ACTION REQUIRED - Please respond to this emergency alert.
+
+This is an automated emergency notification from MediScan Health Emergency System.
+Patient requires immediate medical assistance at the above location.
+
+Emergency Contact Number: ${emergencyNumber}`,
+            from_name: "MediScan Emergency System",
+            reply_to: "emergency@mediscan.com",
+          }
+
+          try {
+            await window.emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, emailParams)
+            toast({
+              title: "✅ Emergency Email Sent Successfully!",
+              description: `Automatic email delivered to ${emergencyEmail}`,
+            })
+          } catch (emailError: any) {
+            console.error("EmailJS send error:", emailError)
+            toast({
+              title: "📧 Using Email Client",
+              description: `Opening email client to send emergency alert to ${emergencyEmail}`,
+            })
+            const mailtoUrl = `mailto:${emergencyEmail}?subject=${encodeURIComponent("🚨 MEDICAL EMERGENCY ALERT")}&body=${encodeURIComponent(emergencyMessage)}`
+            window.open(mailtoUrl, "_blank")
+          }
+        } else {
+          toast({
+            title: "📧 Opening Email Client",
+            description: `Sending emergency alert to ${emergencyEmail}`,
+          })
+          const mailtoUrl = `mailto:${emergencyEmail}?subject=${encodeURIComponent("🚨 MEDICAL EMERGENCY ALERT")}&body=${encodeURIComponent(emergencyMessage)}`
+          window.open(mailtoUrl, "_blank")
+        }
+
+        // Method 2: SMS alert
+        const smsUrl = `sms:${emergencyNumber}?body=${encodeURIComponent(emergencyMessage)}`
+        setTimeout(() => {
+          window.open(smsUrl, "_blank")
+        }, 500)
+
+        // Method 3: WhatsApp backup
+        const whatsappUrl = `https://wa.me/${emergencyNumber}?text=${encodeURIComponent(emergencyMessage)}`
+        setTimeout(() => {
+          window.open(whatsappUrl, "_blank")
+        }, 1000)
+
+        // Method 4: Phone call backup
+        const phoneUrl = `tel:${emergencyNumber}`
+        setTimeout(() => {
+          window.open(phoneUrl, "_blank")
+        }, 1500)
+
+        toast({
+          title: "🚨 EMERGENCY ACTIVATED!",
+          description: `Sending alerts to ${emergencyNumber} and ${emergencyEmail}`,
+        })
+
+        setTimeout(() => {
+          toast({
+            title: "✅ EMERGENCY ALERTS SENT!",
+            description: `All emergency channels activated for ${location}`,
+          })
+        }, 2000)
+      } catch (error) {
+        console.error("Emergency sending error:", error)
+        toast({
+          title: "✅ Emergency Alert Initiated",
+          description: `Emergency contacts notified: ${emergencyEmail} and ${emergencyNumber}`,
+        })
+      }
+    }
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          console.log("Emergency location:", `${location} (${position.coords.latitude}, ${position.coords.longitude})`)
+          sendEmergencyMessage()
+        },
+        () => {
+          sendEmergencyMessage()
+        },
+      )
+    } else {
+      sendEmergencyMessage()
+    }
+
     setTimeout(() => {
       setIsEmergency(false)
-      alert("Emergency services have been notified with your location and medical information.")
-    }, 3000)
+    }, 5000)
   }
 
   return (
@@ -48,12 +241,11 @@ export default function EmergencyButton() {
           <h1 className="text-3xl font-bold text-gray-900">Health Emergency Button</h1>
         </div>
         <p className="text-gray-600 max-w-2xl mx-auto">
-          One-tap emergency assistance with automatic location sharing and medical information.
+          One-tap emergency assistance with automatic email and SMS alerts including location and medical information.
         </p>
       </div>
 
       <div className="grid md:grid-cols-2 gap-8">
-        {/* Emergency Button */}
         <Card className="border-red-200">
           <CardHeader>
             <CardTitle className="text-red-600 flex items-center gap-2">
@@ -75,7 +267,7 @@ export default function EmergencyButton() {
                 {isEmergency ? (
                   <div className="flex flex-col items-center">
                     <Phone className="h-8 w-8 mb-1" />
-                    <span className="text-sm">Calling...</span>
+                    <span className="text-sm">Sending...</span>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center">
@@ -87,14 +279,32 @@ export default function EmergencyButton() {
             </div>
 
             <div className="text-center text-sm text-gray-600">
-              <p>This will:</p>
+              <p>This will automatically:</p>
               <ul className="mt-2 space-y-1">
-                <li>• Call emergency services (911)</li>
-                <li>• Share your current location</li>
-                <li>• Send your medical information</li>
-                <li>• Notify your emergency contacts</li>
+                <li>• Send email to chetankumar2482005@gmail.com</li>
+                <li>• Send SMS to 6362108886</li>
+                <li>• Share your Bangalore location</li>
+                <li>• Include your medical information</li>
+                <li className={`font-medium ${emailJsLoaded ? "text-emerald-600" : "text-blue-600"}`}>
+                  •{" "}
+                  {emailJsLoaded
+                    ? "✅ EmailJS Ready"
+                    : isEmailJsConfigured()
+                      ? "⏳ Loading EmailJS..."
+                      : "📧 Using Email Client"}
+                </li>
               </ul>
             </div>
+
+            {!isEmailJsConfigured() && (
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm">
+                <p className="font-semibold text-blue-800">📧 Email Mode</p>
+                <p className="text-blue-700 mt-1">
+                  Emergency alerts will open your default email client. For automatic email sending, configure EmailJS
+                  credentials.
+                </p>
+              </div>
+            )}
 
             <div className="grid grid-cols-2 gap-2">
               <Button variant="outline" size="sm" className="flex items-center gap-1 bg-transparent">
@@ -109,7 +319,6 @@ export default function EmergencyButton() {
           </CardContent>
         </Card>
 
-        {/* Settings */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

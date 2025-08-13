@@ -101,74 +101,34 @@ export default function ImageCheckerPage() {
   }
 
   const generateMockAnalysis = () => {
-    const analysisTypes = [
-      {
-        type: "Medicine Label",
-        detected: ["Medication name", "Dosage information", "Expiration date", "Manufacturer"],
-        safety: {
-          status: "safe",
-          score: 92,
-          warnings: [],
-          recommendations: [
-            "Medication appears to be legitimate",
-            "Check expiration date before use",
-            "Store in cool, dry place",
-            "Consult pharmacist if unsure",
-          ],
-        },
-        details: {
-          medicationName: "Acetaminophen 500mg",
-          manufacturer: "Generic Pharma Co.",
-          expirationDate: "12/2025",
-          batchNumber: "ABC123",
-          authenticity: "Verified",
-        },
+    return {
+      type: "Medicine Label",
+      detected: ["Medication name", "Dosage information", "Expiration date", "Manufacturer"],
+      safety: {
+        status: "safe",
+        score: 95,
+        warnings: [],
+        recommendations: [
+          "Paracetamol is safe when used as directed",
+          "Do not exceed 4 grams per day",
+          "Check expiration date before use",
+          "Store in cool, dry place",
+          "Consult pharmacist if unsure about dosage",
+        ],
       },
-      {
-        type: "Health Warning Signs",
-        detected: ["Skin condition", "Possible inflammation", "Color changes"],
-        safety: {
-          status: "caution",
-          score: 65,
-          warnings: ["Unusual skin discoloration detected", "Possible signs of inflammation"],
-          recommendations: [
-            "Consult a dermatologist",
-            "Monitor for changes",
-            "Avoid self-diagnosis",
-            "Seek professional medical advice",
-          ],
-        },
-        details: {
-          condition: "Possible dermatitis",
-          severity: "Mild to moderate",
-          urgency: "Non-emergency",
-          nextSteps: "Schedule appointment with healthcare provider",
-        },
+      details: {
+        medicationName: "Paracetamol 500mg",
+        manufacturer: "Generic Pharma Co.",
+        expirationDate: "12/2025",
+        batchNumber: "PCM500-2024",
+        authenticity: "Verified",
+        activeIngredient: "Acetaminophen",
+        dosageForm: "Tablet",
+        strength: "500mg",
+        indication: "Pain relief and fever reduction",
+        safetyProfile: "Well-tolerated when used appropriately",
       },
-      {
-        type: "Medical Device",
-        detected: ["Blood pressure monitor", "Digital display", "Measurement readings"],
-        safety: {
-          status: "safe",
-          score: 88,
-          warnings: [],
-          recommendations: [
-            "Device appears to be functioning normally",
-            "Regular calibration recommended",
-            "Keep device clean and dry",
-            "Follow manufacturer instructions",
-          ],
-        },
-        details: {
-          deviceType: "Digital Blood Pressure Monitor",
-          reading: "120/80 mmHg",
-          status: "Normal range",
-          accuracy: "High confidence",
-        },
-      },
-    ]
-
-    return analysisTypes[Math.floor(Math.random() * analysisTypes.length)]
+    }
   }
 
   const clearImage = () => {

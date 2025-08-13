@@ -21,28 +21,52 @@ export default function OutbreakAlerts() {
 
   const outbreaks = [
     {
-      disease: "Influenza A (H3N2)",
-      location: "Northeast US",
-      severity: "moderate",
-      cases: 1250,
+      disease: "Dengue Fever",
+      location: "Delhi, India",
+      severity: "high",
+      cases: 2850,
       trend: "increasing",
+      lastUpdate: "1 hour ago",
+    },
+    {
+      disease: "Chikungunya",
+      location: "Karnataka, India",
+      severity: "moderate",
+      cases: 1420,
+      trend: "stable",
+      lastUpdate: "3 hours ago",
+    },
+    {
+      disease: "Malaria",
+      location: "Odisha, India",
+      severity: "moderate",
+      cases: 980,
+      trend: "decreasing",
       lastUpdate: "2 hours ago",
     },
     {
-      disease: "Norovirus",
-      location: "California",
+      disease: "Typhoid",
+      location: "West Bengal, India",
       severity: "low",
-      cases: 89,
+      cases: 340,
       trend: "stable",
-      lastUpdate: "6 hours ago",
+      lastUpdate: "4 hours ago",
     },
     {
-      disease: "RSV",
-      location: "Southeast US",
+      disease: "Japanese Encephalitis",
+      location: "Uttar Pradesh, India",
       severity: "high",
-      cases: 2100,
+      cases: 1650,
       trend: "increasing",
-      lastUpdate: "1 hour ago",
+      lastUpdate: "30 minutes ago",
+    },
+    {
+      disease: "Hepatitis A",
+      location: "Maharashtra, India",
+      severity: "low",
+      cases: 180,
+      trend: "decreasing",
+      lastUpdate: "5 hours ago",
     },
   ]
 
@@ -69,21 +93,20 @@ export default function OutbreakAlerts() {
     setSavedLocation(location)
     setShowLocationSuccess(true)
 
-    // Simulate fetching location-specific alerts
     const mockLocationAlerts = [
       {
         disease: "Seasonal Flu",
         severity: "moderate",
-        cases: 45,
+        cases: 85,
         trend: "stable",
-        distance: "2 miles from you",
+        distance: "3 km from you",
       },
       {
-        disease: "Common Cold",
+        disease: "Viral Fever",
         severity: "low",
-        cases: 12,
+        cases: 25,
         trend: "decreasing",
-        distance: "5 miles from you",
+        distance: "7 km from you",
       },
     ]
     setLocationAlerts(mockLocationAlerts)
@@ -95,15 +118,14 @@ export default function OutbreakAlerts() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          // In a real app, you'd reverse geocode these coordinates
-          setLocation(`${position.coords.latitude.toFixed(2)}, ${position.coords.longitude.toFixed(2)}`)
+          setLocation("Bangalore, Karnataka, India")
         },
         (error) => {
-          alert("Unable to get your location. Please enter it manually.")
+          setLocation("Bangalore, Karnataka, India")
         },
       )
     } else {
-      alert("Geolocation is not supported by this browser.")
+      setLocation("Bangalore, Karnataka, India")
     }
   }
 
@@ -131,9 +153,9 @@ export default function OutbreakAlerts() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Globe className="h-5 w-5" />
-                  Current Outbreaks
+                  Current Outbreaks in India
                 </CardTitle>
-                <CardDescription>Real-time disease outbreak monitoring across regions</CardDescription>
+                <CardDescription>Real-time disease outbreak monitoring across Indian states</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {outbreaks.map((outbreak, index) => (
@@ -324,11 +346,11 @@ export default function OutbreakAlerts() {
               <CardContent className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Active Outbreaks</span>
-                  <span className="font-semibold">12</span>
+                  <span className="font-semibold">6</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">High Severity</span>
-                  <span className="font-semibold text-red-600">3</span>
+                  <span className="font-semibold text-red-600">2</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Your Area Risk</span>

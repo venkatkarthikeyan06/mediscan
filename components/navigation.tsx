@@ -280,10 +280,11 @@ export function Navigation() {
   if (isLoading) {
     return (
       <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-        <div className="container flex h-16 items-center justify-between">
+        <div className="container flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-2 font-bold text-xl text-emerald-600">
             <Shield className="h-6 w-6" />
-            MediScan
+            <span className="hidden sm:block">MediScan</span>
+            <span className="sm:hidden">MS</span>
           </Link>
           <div className="animate-pulse bg-gray-200 h-8 w-24 rounded"></div>
         </div>
@@ -293,14 +294,15 @@ export function Navigation() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-      <div className="container flex h-16 items-center justify-between">
+      <div className="container flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2 font-bold text-xl text-emerald-600">
           <Shield className="h-6 w-6" />
-          MediScan
+          <span className="hidden sm:block">MediScan</span>
+          <span className="sm:hidden">MS</span>
         </Link>
 
         {/* Desktop Navigation */}
-        <NavigationMenu className="hidden lg:flex">
+        <NavigationMenu className="hidden md:flex">
           <NavigationMenuList>
             <NavigationMenuItem>
               <Link href="/submit" legacyBehavior passHref>
@@ -313,7 +315,7 @@ export function Navigation() {
             <NavigationMenuItem>
               <NavigationMenuTrigger>Health Tools</NavigationMenuTrigger>
               <NavigationMenuContent>
-                <div className="grid w-[700px] grid-cols-2 gap-3 p-4 max-h-96 overflow-y-auto">
+                <div className="w-[90vw] max-w-[700px] grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 max-h-[70vh] overflow-y-auto">
                   {healthFeatures.map((feature) => (
                     <Link
                       key={feature.href}
@@ -321,8 +323,8 @@ export function Navigation() {
                       className="group grid h-auto w-full items-center justify-start gap-1 rounded-md bg-white p-4 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50"
                     >
                       <div className="flex items-center gap-2 text-sm font-medium leading-none group-hover:underline">
-                        <feature.icon className="h-4 w-4 text-emerald-600" />
-                        {feature.title}
+                        <feature.icon className="h-4 w-4 text-emerald-600 flex-shrink-0" />
+                        <span className="truncate">{feature.title}</span>
                       </div>
                       <div className="line-clamp-2 text-xs leading-snug text-gray-500">{feature.description}</div>
                     </Link>
@@ -334,7 +336,7 @@ export function Navigation() {
             <NavigationMenuItem>
               <NavigationMenuTrigger>Sustainable</NavigationMenuTrigger>
               <NavigationMenuContent>
-                <div className="grid w-[600px] grid-cols-1 gap-3 p-4 max-h-96 overflow-y-auto">
+                <div className="w-[90vw] max-w-[600px] grid grid-cols-1 gap-3 p-4 max-h-[70vh] overflow-y-auto">
                   {sustainableFeatures.map((feature) => (
                     <Link
                       key={feature.href}
@@ -342,8 +344,8 @@ export function Navigation() {
                       className="group grid h-auto w-full items-center justify-start gap-1 rounded-md bg-white p-4 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50"
                     >
                       <div className="flex items-center gap-2 text-sm font-medium leading-none group-hover:underline">
-                        <feature.icon className="h-4 w-4 text-green-600" />
-                        {feature.title}
+                        <feature.icon className="h-4 w-4 text-green-600 flex-shrink-0" />
+                        <span className="truncate">{feature.title}</span>
                       </div>
                       <div className="line-clamp-2 text-xs leading-snug text-gray-500">{feature.description}</div>
                     </Link>
@@ -355,7 +357,8 @@ export function Navigation() {
             <NavigationMenuItem>
               <Link href="/sources" legacyBehavior passHref>
                 <NavigationMenuLink className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50">
-                  Trusted Sources
+                  <span className="hidden lg:block">Trusted Sources</span>
+                  <span className="lg:hidden">Sources</span>
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
@@ -377,9 +380,9 @@ export function Navigation() {
           {user && (
             <Popover open={isAlertsOpen} onOpenChange={setIsAlertsOpen}>
               <PopoverTrigger asChild>
-                <Button variant="ghost" size="sm" className="hidden md:flex relative">
-                  <Bell className="h-4 w-4 mr-2" />
-                  Alerts
+                <Button variant="ghost" size="sm" className="relative">
+                  <Bell className="h-4 w-4" />
+                  <span className="hidden sm:ml-2 sm:block">Alerts</span>
                   {unreadCount > 0 && (
                     <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs bg-red-500 hover:bg-red-500">
                       {unreadCount}
@@ -387,7 +390,7 @@ export function Navigation() {
                   )}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-96 p-0" align="end">
+              <PopoverContent className="w-[90vw] max-w-96 p-0" align="end">
                 <div className="border-b p-4">
                   <h3 className="font-semibold text-lg">Health & Environment Alerts</h3>
                   <p className="text-sm text-gray-600">Stay informed about health and environmental updates</p>
@@ -409,24 +412,28 @@ export function Navigation() {
                           onClick={() => markAsRead(alert.id)}
                         >
                           <div className="flex items-start justify-between gap-3">
-                            <div className="flex items-start gap-3 flex-1">
-                              <IconComponent className={`h-5 w-5 mt-0.5 ${getAlertColor(alert.priority)}`} />
-                              <div className="flex-1">
+                            <div className="flex items-start gap-3 flex-1 min-w-0">
+                              <IconComponent
+                                className={`h-5 w-5 mt-0.5 flex-shrink-0 ${getAlertColor(alert.priority)}`}
+                              />
+                              <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-1">
                                   <h4
-                                    className={`font-medium text-sm ${!alert.read ? "text-gray-900" : "text-gray-700"}`}
+                                    className={`font-medium text-sm truncate ${!alert.read ? "text-gray-900" : "text-gray-700"}`}
                                   >
                                     {alert.title}
                                   </h4>
-                                  {!alert.read && <div className="h-2 w-2 bg-blue-500 rounded-full"></div>}
+                                  {!alert.read && (
+                                    <div className="h-2 w-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                                  )}
                                 </div>
-                                <p className="text-xs text-gray-600 mb-2">{alert.message}</p>
-                                <div className="flex items-center gap-2 text-xs text-gray-500">
+                                <p className="text-xs text-gray-600 mb-2 line-clamp-3">{alert.message}</p>
+                                <div className="flex items-center gap-2 text-xs text-gray-500 flex-wrap">
                                   <span>{formatTimestamp(alert.timestamp)}</span>
                                   {alert.location && (
                                     <>
                                       <span>•</span>
-                                      <span>{alert.location}</span>
+                                      <span className="truncate">{alert.location}</span>
                                     </>
                                   )}
                                   <Badge variant="outline" className="text-xs">
@@ -438,7 +445,7 @@ export function Navigation() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-6 w-6 p-0 hover:bg-gray-200"
+                              className="h-6 w-6 p-0 hover:bg-gray-200 flex-shrink-0"
                               onClick={(e) => {
                                 e.stopPropagation()
                                 dismissAlert(alert.id)
@@ -472,43 +479,44 @@ export function Navigation() {
 
           {user ? (
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600 hidden md:block">
+              <span className="text-sm text-gray-600 hidden lg:block max-w-32 truncate">
                 Welcome, {user.name || user.email.split("@")[0]}
               </span>
               <Button variant="ghost" size="sm" onClick={logout}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
+                <LogOut className="h-4 w-4" />
+                <span className="hidden sm:ml-2 sm:block">Sign Out</span>
               </Button>
             </div>
           ) : (
-            <>
+            <div className="flex items-center gap-2">
               <Link href="/login">
                 <Button variant="ghost" size="sm">
-                  <User className="h-4 w-4 mr-2" />
-                  Sign In
+                  <User className="h-4 w-4" />
+                  <span className="hidden sm:ml-2 sm:block">Sign In</span>
                 </Button>
               </Link>
               <Link href="/login">
                 <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
-                  Get Started
+                  <span className="hidden sm:block">Get Started</span>
+                  <span className="sm:hidden">Start</span>
                 </Button>
               </Link>
-            </>
+            </div>
           )}
 
           {/* Mobile Menu */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="sm" className="lg:hidden">
+              <Button variant="ghost" size="sm" className="md:hidden">
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-80">
+            <SheetContent side="right" className="w-[85vw] max-w-sm">
               <div className="flex flex-col gap-4 mt-8">
                 {user && (
                   <div className="pb-4 border-b">
                     <p className="text-sm text-gray-600">Welcome,</p>
-                    <p className="font-medium">{user.name || user.email.split("@")[0]}</p>
+                    <p className="font-medium truncate">{user.name || user.email.split("@")[0]}</p>
                     <div className="mt-3">
                       <div className="flex items-center gap-2 mb-2">
                         <Bell className="h-4 w-4" />
@@ -523,8 +531,8 @@ export function Navigation() {
                           return (
                             <div key={alert.id} className="text-xs p-2 bg-gray-50 rounded">
                               <div className="flex items-center gap-2 mb-1">
-                                <IconComponent className={`h-3 w-3 ${getAlertColor(alert.priority)}`} />
-                                <span className="font-medium">{alert.title}</span>
+                                <IconComponent className={`h-3 w-3 flex-shrink-0 ${getAlertColor(alert.priority)}`} />
+                                <span className="font-medium truncate">{alert.title}</span>
                               </div>
                               <p className="text-gray-600 line-clamp-2">{alert.message}</p>
                             </div>
@@ -541,7 +549,7 @@ export function Navigation() {
 
                 <div className="space-y-3">
                   <h3 className="text-lg font-medium text-gray-900">Health Tools</h3>
-                  <div className="max-h-60 overflow-y-auto space-y-3">
+                  <div className="max-h-48 overflow-y-auto space-y-2">
                     {healthFeatures.map((feature) => (
                       <Link
                         key={feature.href}
@@ -549,10 +557,10 @@ export function Navigation() {
                         className="flex items-start gap-3 p-2 rounded-md hover:bg-gray-100"
                         onClick={() => setIsOpen(false)}
                       >
-                        <feature.icon className="h-5 w-5 text-emerald-600 mt-0.5" />
-                        <div>
-                          <div className="font-medium text-sm">{feature.title}</div>
-                          <div className="text-xs text-gray-500 mt-1">{feature.description}</div>
+                        <feature.icon className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <div className="font-medium text-sm truncate">{feature.title}</div>
+                          <div className="text-xs text-gray-500 mt-1 line-clamp-2">{feature.description}</div>
                         </div>
                       </Link>
                     ))}
@@ -561,7 +569,7 @@ export function Navigation() {
 
                 <div className="space-y-3">
                   <h3 className="text-lg font-medium text-gray-900">Sustainable</h3>
-                  <div className="max-h-60 overflow-y-auto space-y-3">
+                  <div className="max-h-48 overflow-y-auto space-y-2">
                     {sustainableFeatures.map((feature) => (
                       <Link
                         key={feature.href}
@@ -569,10 +577,10 @@ export function Navigation() {
                         className="flex items-start gap-3 p-2 rounded-md hover:bg-gray-100"
                         onClick={() => setIsOpen(false)}
                       >
-                        <feature.icon className="h-5 w-5 text-green-600 mt-0.5" />
-                        <div>
-                          <div className="font-medium text-sm">{feature.title}</div>
-                          <div className="text-xs text-gray-500 mt-1">{feature.description}</div>
+                        <feature.icon className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <div className="font-medium text-sm truncate">{feature.title}</div>
+                          <div className="text-xs text-gray-500 mt-1 line-clamp-2">{feature.description}</div>
                         </div>
                       </Link>
                     ))}
