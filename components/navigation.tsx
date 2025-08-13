@@ -12,6 +12,8 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Badge } from "@/components/ui/badge"
 import {
   Shield,
   Menu,
@@ -36,9 +38,76 @@ import {
   Wind,
   Video,
   TreePine,
+  AlertTriangle,
+  Info,
+  CheckCircle,
+  X,
 } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import { LogOut } from "lucide-react"
+
+interface Alert {
+  id: string
+  type: "health" | "environment" | "outbreak" | "safety"
+  title: string
+  message: string
+  timestamp: Date
+  priority: "low" | "medium" | "high"
+  read: boolean
+  location?: string
+}
+
+const sampleAlerts: Alert[] = [
+  {
+    id: "1",
+    type: "health",
+    title: "Dengue Alert - Bangalore",
+    message: "Increased dengue cases reported in Bangalore. Take preventive measures against mosquito breeding.",
+    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+    priority: "high",
+    read: false,
+    location: "Bangalore",
+  },
+  {
+    id: "2",
+    type: "environment",
+    title: "Air Quality Alert",
+    message: "Air quality index is unhealthy (AQI: 165). Limit outdoor activities and wear masks.",
+    timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
+    priority: "medium",
+    read: false,
+    location: "Bangalore",
+  },
+  {
+    id: "3",
+    type: "outbreak",
+    title: "H3N2 Influenza Update",
+    message: "Seasonal flu cases rising. Get vaccinated and practice good hygiene.",
+    timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
+    priority: "medium",
+    read: true,
+    location: "Karnataka",
+  },
+  {
+    id: "4",
+    type: "safety",
+    title: "Medicine Recall Notice",
+    message: "Batch #XYZ123 of Paracetamol tablets recalled due to quality concerns. Check your medicine cabinet.",
+    timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+    priority: "high",
+    read: false,
+  },
+  {
+    id: "5",
+    type: "environment",
+    title: "Water Quality Advisory",
+    message: "Temporary water quality issues in select areas. Boil water before consumption.",
+    timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
+    priority: "medium",
+    read: true,
+    location: "Bangalore",
+  },
+]
 
 const healthFeatures = [
   {
@@ -162,7 +231,51 @@ const sustainableFeatures = [
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
+  const [alerts, setAlerts] = useState<Alert[]>(sampleAlerts)
+  const [isAlertsOpen, setIsAlertsOpen] = useState(false)
   const { user, logout, isLoading } = useAuth()
+
+  const getAlertIcon = (type: Alert["type"], priority: Alert["priority"]) => {
+    if (priority === "high") return AlertTriangle
+    if (type === "health" || type === "outbreak") return Heart
+    if (type === "environment") return Wind
+    if (type === "safety") return Shield
+    return Info
+  }
+
+  const getAlertColor = (priority: Alert["priority"]) => {
+    switch (priority) {
+      case "high":
+        return "text-red-600"
+      case "medium":
+        return "text-orange-600"
+      case "low":
+        return "text-blue-600"
+      default:
+        return "text-gray-600"
+    }
+  }
+
+  const formatTimestamp = (timestamp: Date) => {
+    const now = new Date()
+    const diff = now.getTime() - timestamp.getTime()
+    const hours = Math.floor(diff / (1000 * 60 * 60))
+    const days = Math.floor(hours / 24)
+
+    if (days > 0) return `${days}d ago`
+    if (hours > 0) return `${hours}h ago`
+    return "Just now"
+  }
+
+  const markAsRead = (alertId: string) => {
+    setAlerts((prev) => prev.map((alert) => (alert.id === alertId ? { ...alert, read: true } : alert)))
+  }
+
+  const dismissAlert = (alertId: string) => {
+    setAlerts((prev) => prev.filter((alert) => alert.id !== alertId))
+  }
+
+  const unreadCount = alerts.filter((alert) => !alert.read).length
 
   if (isLoading) {
     return (
@@ -262,10 +375,99 @@ export function Navigation() {
         {/* User Actions */}
         <div className="flex items-center gap-2">
           {user && (
-            <Button variant="ghost" size="sm" className="hidden md:flex">
-              <Bell className="h-4 w-4 mr-2" />
-              Alerts
-            </Button>
+            <Popover open={isAlertsOpen} onOpenChange={setIsAlertsOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="sm" className="hidden md:flex relative">
+                  <Bell className="h-4 w-4 mr-2" />
+                  Alerts
+                  {unreadCount > 0 && (
+                    <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs bg-red-500 hover:bg-red-500">
+                      {unreadCount}
+                    </Badge>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-96 p-0" align="end">
+                <div className="border-b p-4">
+                  <h3 className="font-semibold text-lg">Health & Environment Alerts</h3>
+                  <p className="text-sm text-gray-600">Stay informed about health and environmental updates</p>
+                </div>
+                <div className="max-h-96 overflow-y-auto">
+                  {alerts.length === 0 ? (
+                    <div className="p-4 text-center text-gray-500">
+                      <CheckCircle className="h-8 w-8 mx-auto mb-2 text-green-500" />
+                      <p>No alerts at this time</p>
+                      <p className="text-xs">We'll notify you of any important updates</p>
+                    </div>
+                  ) : (
+                    alerts.map((alert) => {
+                      const IconComponent = getAlertIcon(alert.type, alert.priority)
+                      return (
+                        <div
+                          key={alert.id}
+                          className={`p-4 border-b hover:bg-gray-50 cursor-pointer ${!alert.read ? "bg-blue-50" : ""}`}
+                          onClick={() => markAsRead(alert.id)}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-start gap-3 flex-1">
+                              <IconComponent className={`h-5 w-5 mt-0.5 ${getAlertColor(alert.priority)}`} />
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h4
+                                    className={`font-medium text-sm ${!alert.read ? "text-gray-900" : "text-gray-700"}`}
+                                  >
+                                    {alert.title}
+                                  </h4>
+                                  {!alert.read && <div className="h-2 w-2 bg-blue-500 rounded-full"></div>}
+                                </div>
+                                <p className="text-xs text-gray-600 mb-2">{alert.message}</p>
+                                <div className="flex items-center gap-2 text-xs text-gray-500">
+                                  <span>{formatTimestamp(alert.timestamp)}</span>
+                                  {alert.location && (
+                                    <>
+                                      <span>•</span>
+                                      <span>{alert.location}</span>
+                                    </>
+                                  )}
+                                  <Badge variant="outline" className="text-xs">
+                                    {alert.type}
+                                  </Badge>
+                                </div>
+                              </div>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0 hover:bg-gray-200"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                dismissAlert(alert.id)
+                              }}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      )
+                    })
+                  )}
+                </div>
+                {alerts.length > 0 && (
+                  <div className="p-3 border-t bg-gray-50">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full text-xs"
+                      onClick={() => {
+                        setAlerts((prev) => prev.map((alert) => ({ ...alert, read: true })))
+                      }}
+                    >
+                      Mark all as read
+                    </Button>
+                  </div>
+                )}
+              </PopoverContent>
+            </Popover>
           )}
 
           {user ? (
@@ -307,6 +509,29 @@ export function Navigation() {
                   <div className="pb-4 border-b">
                     <p className="text-sm text-gray-600">Welcome,</p>
                     <p className="font-medium">{user.name || user.email.split("@")[0]}</p>
+                    <div className="mt-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Bell className="h-4 w-4" />
+                        <span className="text-sm font-medium">Alerts</span>
+                        {unreadCount > 0 && (
+                          <Badge className="h-5 w-5 rounded-full p-0 text-xs bg-red-500">{unreadCount}</Badge>
+                        )}
+                      </div>
+                      <div className="max-h-32 overflow-y-auto space-y-2">
+                        {alerts.slice(0, 3).map((alert) => {
+                          const IconComponent = getAlertIcon(alert.type, alert.priority)
+                          return (
+                            <div key={alert.id} className="text-xs p-2 bg-gray-50 rounded">
+                              <div className="flex items-center gap-2 mb-1">
+                                <IconComponent className={`h-3 w-3 ${getAlertColor(alert.priority)}`} />
+                                <span className="font-medium">{alert.title}</span>
+                              </div>
+                              <p className="text-gray-600 line-clamp-2">{alert.message}</p>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
                   </div>
                 )}
 

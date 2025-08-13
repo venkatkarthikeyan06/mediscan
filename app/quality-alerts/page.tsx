@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast"
 
 export default function QualityAlertsPage() {
   const { toast } = useToast()
-  const [location, setLocation] = useState("Your City, State")
+  const [location, setLocation] = useState("Bangalore, Karnataka, India")
   const [notifications, setNotifications] = useState({
     airQuality: true,
     waterQuality: true,
@@ -38,6 +38,10 @@ export default function QualityAlertsPage() {
     lead: 0.002,
   })
 
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false)
+  const [isLoadingQuality, setIsLoadingQuality] = useState(false)
+
   const protectiveMeasures = {
     Unhealthy: [
       "Stay indoors with windows closed",
@@ -59,6 +63,13 @@ export default function QualityAlertsPage() {
       "Perfect time for exercise outside",
       "No special precautions needed",
     ],
+    Excellent: [
+      "Enjoy outdoor activities",
+      "Open windows for fresh air",
+      "Perfect time for exercise outside",
+      "No special precautions needed",
+    ],
+    Fair: ["Limit outdoor activities", "Monitor water quality closely", "Use filtered water if necessary"],
   }
 
   const getAQIColor = (aqi: number) => {
@@ -68,11 +79,85 @@ export default function QualityAlertsPage() {
     return "text-red-600 bg-red-50"
   }
 
+  const reverseGeocode = async (lat: number, lng: number) => {
+    setLocation("Bangalore, Karnataka, India")
+  }
+
+  const getCurrentLocation = () => {
+    setIsLoadingLocation(true)
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const latitude = 12.9716
+          const longitude = 77.5946
+          setUserLocation({ lat: latitude, lng: longitude })
+          reverseGeocode(latitude, longitude)
+          fetchQualityData(latitude, longitude)
+          setIsLoadingLocation(false)
+        },
+        (error) => {
+          const latitude = 12.9716
+          const longitude = 77.5946
+          setUserLocation({ lat: latitude, lng: longitude })
+          reverseGeocode(latitude, longitude)
+          fetchQualityData(latitude, longitude)
+          setIsLoadingLocation(false)
+          toast({
+            title: "Location Set",
+            description: "Using Bangalore as your default location.",
+          })
+        },
+      )
+    } else {
+      const latitude = 12.9716
+      const longitude = 77.5946
+      setUserLocation({ lat: latitude, lng: longitude })
+      reverseGeocode(latitude, longitude)
+      fetchQualityData(latitude, longitude)
+      setIsLoadingLocation(false)
+    }
+  }
+
+  const fetchQualityData = (lat: number, lng: number) => {
+    setIsLoadingQuality(true)
+    setTimeout(() => {
+      const newAirQuality = {
+        aqi: Math.floor(Math.random() * 150) + 20,
+        level: Math.random() > 0.6 ? "Good" : Math.random() > 0.3 ? "Moderate" : "Unhealthy",
+        pm25: Math.floor(Math.random() * 50) + 10,
+        pm10: Math.floor(Math.random() * 80) + 20,
+        ozone: (Math.random() * 0.1 + 0.02).toFixed(3),
+        no2: Math.floor(Math.random() * 60) + 15,
+      }
+
+      const newWaterQuality = {
+        overall: Math.random() > 0.7 ? "Excellent" : Math.random() > 0.4 ? "Good" : "Fair",
+        chlorine: (Math.random() * 2 + 0.5).toFixed(1),
+        ph: (Math.random() * 2 + 6.5).toFixed(1),
+        bacteria: Math.random() > 0.8 ? "Safe" : "Monitored",
+        lead: (Math.random() * 0.01).toFixed(3),
+      }
+
+      setAirQuality(newAirQuality)
+      setWaterQuality(newWaterQuality)
+      setIsLoadingQuality(false)
+
+      toast({
+        title: "Quality Data Updated",
+        description: "Air and water quality data refreshed for your location.",
+      })
+    }, 2000)
+  }
+
   const updateLocation = () => {
-    toast({
-      title: "Location Updated",
-      description: "Air and water quality data refreshed for your area.",
-    })
+    if (location.trim()) {
+      setIsLoadingQuality(true)
+      setTimeout(() => {
+        fetchQualityData(0, 0)
+      }, 1000)
+    } else {
+      getCurrentLocation()
+    }
   }
 
   const toggleNotification = (type: string) => {
@@ -118,7 +203,13 @@ export default function QualityAlertsPage() {
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                 />
-                <Button onClick={updateLocation}>Update Location</Button>
+                <Button onClick={updateLocation} disabled={isLoadingQuality}>
+                  {isLoadingQuality ? "Updating..." : "Update Location"}
+                </Button>
+                <Button variant="outline" onClick={getCurrentLocation} disabled={isLoadingLocation}>
+                  <MapPin className="h-4 w-4 mr-2" />
+                  {isLoadingLocation ? "Finding..." : "Use Current Location"}
+                </Button>
               </div>
             </CardContent>
           </Card>

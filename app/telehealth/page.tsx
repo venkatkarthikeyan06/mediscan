@@ -17,6 +17,25 @@ export default function TelehealthPage() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
   const [appointmentType, setAppointmentType] = useState("")
   const [symptoms, setSymptoms] = useState("")
+  const [availableSlots, setAvailableSlots] = useState<string[]>([])
+  const [selectedSlot, setSelectedSlot] = useState("")
+  const [isBookingAppointment, setIsBookingAppointment] = useState(false)
+  const [bookedAppointments, setBookedAppointments] = useState([
+    {
+      doctor: "Dr. Sarah Johnson",
+      date: "Today",
+      time: "2:00 PM",
+      type: "Follow-up Consultation",
+      platform: "Video Call",
+    },
+    {
+      doctor: "Dr. Michael Chen",
+      date: "Tomorrow",
+      time: "10:00 AM",
+      type: "General Checkup",
+      platform: "Phone Call",
+    },
+  ])
 
   const doctors = [
     {
@@ -45,35 +64,140 @@ export default function TelehealthPage() {
     },
   ]
 
-  const upcomingAppointments = [
-    {
-      doctor: "Dr. Sarah Johnson",
-      date: "Today",
-      time: "2:00 PM",
-      type: "Follow-up Consultation",
-      platform: "Video Call",
-    },
-    {
-      doctor: "Dr. Michael Chen",
-      date: "Tomorrow",
-      time: "10:00 AM",
-      type: "General Checkup",
-      platform: "Phone Call",
-    },
-  ]
+  const generateTimeSlots = (date: Date) => {
+    const slots = []
+    const startHour = 9
+    const endHour = 17
+
+    for (let hour = startHour; hour < endHour; hour++) {
+      for (let minute = 0; minute < 60; minute += 30) {
+        const timeString = `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`
+        // Randomly make some slots unavailable
+        if (Math.random() > 0.3) {
+          slots.push(timeString)
+        }
+      }
+    }
+    return slots
+  }
+
+  const findAvailableTimes = () => {
+    if (!selectedDate || !appointmentType) {
+      toast({
+        title: "Missing Information",
+        description: "Please select appointment type and date first.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    const slots = generateTimeSlots(selectedDate)
+    setAvailableSlots(slots)
+    toast({
+      title: "Available Times Found",
+      description: `Found ${slots.length} available time slots for ${selectedDate.toDateString()}`,
+    })
+  }
 
   const bookAppointment = (doctorName: string) => {
-    toast({
-      title: "Appointment Booking",
-      description: `Booking appointment with ${doctorName}...`,
-    })
+    if (!selectedSlot) {
+      toast({
+        title: "Select Time Slot",
+        description: "Please select an available time slot first.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!appointmentType || !symptoms.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in appointment type and symptoms before booking.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsBookingAppointment(true)
+
+    setTimeout(() => {
+      const newAppointment = {
+        doctor: doctorName,
+        date: selectedDate?.toDateString() || "Today",
+        time: selectedSlot,
+        type: appointmentType,
+        platform: "Video Call",
+        symptoms: symptoms,
+        bookingId: `BK${Date.now()}`,
+      }
+
+      setBookedAppointments((prev) => [...prev, newAppointment])
+      setIsBookingAppointment(false)
+      setSelectedSlot("")
+      setAvailableSlots([])
+      setSymptoms("")
+      setAppointmentType("")
+
+      toast({
+        title: "Appointment Confirmed!",
+        description: `Your appointment with ${doctorName} is booked for ${selectedSlot}. Booking ID: ${newAppointment.bookingId}`,
+      })
+    }, 2000)
   }
 
   const joinCall = (doctorName: string) => {
     toast({
-      title: "Joining Call",
-      description: `Connecting to video call with ${doctorName}...`,
+      title: "Preparing Video Call",
+      description: "Checking camera and microphone permissions...",
     })
+
+    setTimeout(() => {
+      toast({
+        title: "Joining Video Call",
+        description: `Connecting to secure video call with ${doctorName}...`,
+      })
+
+      // Simulate opening video call interface
+      setTimeout(() => {
+        toast({
+          title: "Call Connected",
+          description: "You are now connected to your healthcare provider. The call is encrypted and secure.",
+        })
+
+        const callWindow = window.open(
+          "about:blank",
+          "TelehealthCall",
+          "width=800,height=600,resizable=yes,scrollbars=no,toolbar=no,menubar=no",
+        )
+        if (callWindow) {
+          callWindow.document.write(`
+            <html>
+              <head><title>Telehealth Call - ${doctorName}</title></head>
+              <body style="margin:0;padding:20px;font-family:Arial,sans-serif;background:#f0f0f0;">
+                <div style="text-align:center;padding:50px;">
+                  <h2>Video Call with ${doctorName}</h2>
+                  <div style="width:400px;height:300px;background:#000;margin:20px auto;border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;">
+                    <div>📹 Video Call Active</div>
+                  </div>
+                  <p>Call Duration: <span id="timer">00:00</span></p>
+                  <button onclick="window.close()" style="padding:10px 20px;background:#dc2626;color:white;border:none;border-radius:5px;cursor:pointer;">End Call</button>
+                </div>
+                <script>
+                  let seconds = 0;
+                  setInterval(() => {
+                    seconds++;
+                    const mins = Math.floor(seconds / 60);
+                    const secs = seconds % 60;
+                    document.getElementById('timer').textContent = 
+                      mins.toString().padStart(2, '0') + ':' + secs.toString().padStart(2, '0');
+                  }, 1000);
+                </script>
+              </body>
+            </html>
+          `)
+        }
+      }, 3000)
+    }, 1500)
   }
 
   return (
@@ -164,10 +288,28 @@ export default function TelehealthPage() {
                       />
                     </div>
 
-                    <Button className="w-full">
+                    <Button className="w-full" onClick={findAvailableTimes}>
                       <CalendarIcon className="h-4 w-4 mr-2" />
                       Find Available Times
                     </Button>
+
+                    {availableSlots.length > 0 && (
+                      <div className="space-y-2">
+                        <Label>Available Time Slots</Label>
+                        <div className="grid grid-cols-3 gap-2">
+                          {availableSlots.map((slot) => (
+                            <Button
+                              key={slot}
+                              variant={selectedSlot === slot ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setSelectedSlot(slot)}
+                            >
+                              {slot}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
 
@@ -204,7 +346,7 @@ export default function TelehealthPage() {
 
             <TabsContent value="upcoming" className="space-y-6">
               <div className="space-y-4">
-                {upcomingAppointments.map((appointment, index) => (
+                {bookedAppointments.map((appointment, index) => (
                   <Card key={index}>
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between">
@@ -263,8 +405,12 @@ export default function TelehealthPage() {
                         <div className="text-right">
                           <div className="text-lg font-semibold text-green-600">{doctor.consultationFee}</div>
                           <p className="text-sm text-green-600">Saves {doctor.carbonSaved}</p>
-                          <Button className="mt-2" onClick={() => bookAppointment(doctor.name)}>
-                            Book Appointment
+                          <Button
+                            className="mt-2"
+                            onClick={() => bookAppointment(doctor.name)}
+                            disabled={isBookingAppointment}
+                          >
+                            {isBookingAppointment ? "Booking..." : "Book Appointment"}
                           </Button>
                         </div>
                       </div>
